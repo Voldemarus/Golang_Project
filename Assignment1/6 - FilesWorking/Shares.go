@@ -155,25 +155,30 @@ func prepareReport(consolePrint bool, numShare int) {
 	}
 	defer outFile.Close()
 
-	reportHeader := fmt.Sprintf("Invested sum: %7.2f\n\n", investingSum)
+	reportHeader := fmt.Sprintf("Invested sum: %7.2f USD\n\n", investingSum)
 	reportHeader = reportHeader + "Ticker\t\tAmount of shares\tPlanned monthly income\n"
 	_, err = outFile.WriteString(reportHeader)
 	if err != nil {
 		log.Fatalln("Error during writing to output file", err)
 		return
 	}
+	if consolePrint {
+		fmt.Print(reportHeader)
+	}
 	for index := 0; index < numShare; index++ {
-		currentIncome := income[index]
+		currentIncome := outputData[index]
 		tickerLine := currentIncome.ticker + "\t\t\t" + fmt.Sprintf("%.0f", currentIncome.numShares) +
-			"\t\t\t" + fmt.Sprintf("%.2f YSD/month\n", currentIncome.income)
+			"\t\t\t" + fmt.Sprintf("%.2f USD/month\n", currentIncome.income)
 		_, err := outFile.WriteString(tickerLine)
 		if err != nil {
 			log.Fatalln("Error during writing to output file", err)
 			return
 		}
+		if consolePrint {
+			fmt.Print(tickerLine)
+		}
 	}
 
-	fmt.Println(outputData)
 }
 
 ////////// Service functions ///////////////
