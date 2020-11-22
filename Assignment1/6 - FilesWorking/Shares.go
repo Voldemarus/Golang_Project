@@ -163,7 +163,7 @@ func prepareReport(consolePrint bool, numShare int) {
 		return
 	}
 	if consolePrint {
-		fmt.Print(reportHeader)
+		fmt.Print("\n\n", reportHeader)
 	}
 	for index := 0; index < numShare; index++ {
 		currentIncome := outputData[index]
@@ -177,6 +177,9 @@ func prepareReport(consolePrint bool, numShare int) {
 		if consolePrint {
 			fmt.Print(tickerLine)
 		}
+	}
+	if consolePrint {
+		fmt.Print("\n\n")
 	}
 
 }

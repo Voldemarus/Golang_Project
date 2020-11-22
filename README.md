@@ -4,7 +4,7 @@ Learning curve
 Assignment 1
 
 2. Ping Pong -  go channel and go mutex
-
+6. Shares    -   go loop go function struct go files cmd args array slice
 
 
 
