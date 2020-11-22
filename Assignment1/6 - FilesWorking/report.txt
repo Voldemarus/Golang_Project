@@ -1,0 +1,6 @@
+Invested sum: 1000.00
+
+Ticker		Amount of shares	Planned monthly income
+ARR			94			7.99 YSD/month
+OKE			30			7.99 YSD/month
+STWD			56			7.62 YSD/month
