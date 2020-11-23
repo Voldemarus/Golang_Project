@@ -21,9 +21,7 @@ Solar wind :  563
 Magnetic field: Bt  3  Bz:  -1
 Flux 10 cm:  88 
 
-
 * TimeStamp -  2020-11-23T08:48:00Z 
-
 
 * Created data structure -  map[Bt:3 Bz:-1 Flux:88 SolarWind:563 TimeStamp:2020-11-23T08:48:00Z] 
 
