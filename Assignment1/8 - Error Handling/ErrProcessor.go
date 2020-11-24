@@ -76,7 +76,32 @@ func main() {
 	}
 
 	// Panic and recover
+	fmt.Println("\n* Panic/Recover\n")
 
+	fmt.Println("Call panic with recovery activated")
+	executePanic(true)
+
+	fmt.Println("Call pnic without recovery")
+	executePanic(false)
+
+}
+
+////////////////////////////
+
+func recoveryFunction() {
+	if recoveryMessage := recover(); recoveryMessage != nil {
+		fmt.Println(recoveryMessage)
+	}
+	fmt.Println("Recovery function completed\n")
+}
+
+func executePanic(callRecovery bool) {
+	fmt.Println("executePanic() started")
+	if callRecovery {
+		defer recoveryFunction() // will be called afterwards in any case!
+	}
+	panic("Panic event initiated!")
+	fmt.Println("executePanic() function finished") // Will not executed!
 }
 
 ////////////////////////////
