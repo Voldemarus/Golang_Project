@@ -3,10 +3,13 @@ Learning curve
 
 Assignment 1
 
-2. Ping Pong    -  go channel and go mutex
-6. Shares       -  go loop go function struct go files cmd args array slice
-7. JSON         -  json parsing and generation, time conversion 
-10. Validator   -  regexp 
+2. Ping Pong     -  go channel and go mutex
+5. Random        -  go channel - rand - go loop - go routine - slice - 
+                    go concurency - go mutex - pointer 
+6. Shares        -  go loop go function struct go files cmd args array slice
+7. JSON          -  json parsing and generation, time conversion 
+8. ErrProcessing -  defer panic recovery error
+10. Validator    -  regexp 
 
 +++ +++ +++ 
 
