@@ -1,10 +1,15 @@
 
 Factorial - multithreaded calculator 
 
-Current version - without concurent processing 
+Two recursive function defined -  factorial() and factorialMT()
 
-Two recursive function defined - sum() and factorial() 
+First function is a traditional recursive implementation. 
 
-The main idea is to implement multithread version of sum() with dichotomy algorithm 
-each sum is calculated by recursive procedure - initial interval is splitted to two and sum 
-for each part is calculated. Then we add left and right partial sum together.
+The second one - implementation with divide/conquer algorithm where initial numbber 
+is divided by two and two multiplication function are called - for 1..m and m+1..n intervals 
+where m = n / 2. 
+
+Each algorithm is started in its own thread. 
+function accepts from, to border value and channel ID, used to return value. 
+
+
