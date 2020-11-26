@@ -7,6 +7,7 @@ Assignment 1
                     concurency - go routine
 2. Ping Pong     -  go channel and go mutex
 3. ServerChannel -  Using channels to transfer data between handler and logger in web server
+4. ServerWorkers -  channels - go routine - select - structures
 5. Random        -  go channel - rand - go loop - go routine - slice - 
                     go concurency - go mutex - pointer 
 6. Shares        -  go loop go function struct go files cmd args array slice
