@@ -13,6 +13,7 @@ Assignment 1
 6. Shares        -  go loop go function struct go files cmd args array slice
 7. JSON          -  json parsing and generation, time conversion 
 8. ErrProcessing -  defer panic recovery error
+9. Structure     -  interface - struct -  map - 
 10. Validator    -  regexp 
 
 +++ +++ +++ 
