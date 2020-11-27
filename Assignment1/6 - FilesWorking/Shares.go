@@ -37,7 +37,7 @@ type IncomeList []ShareIncome
 
 const (
 	kPortfolioSize      int     = 40   // max amount of shares in portfolio
-	kBetterSharesAmount int     = 3    // amount of shares placed into report
+	kBetterSharesAmount int     = 10   // amount of shares placed into report
 	kConsolePrint       bool    = true // duplicate report to console
 	kBbrokerFee         float64 = 10.0 // Broker's fee added to any purchase/sell opperation
 )

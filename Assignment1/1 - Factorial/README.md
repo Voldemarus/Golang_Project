@@ -12,4 +12,9 @@ where m = n / 2.
 Each algorithm is started in its own thread. 
 function accepts from, to border value and channel ID, used to return value. 
 
+Example:
+
+Colombina:1 - Factorial 1$ go run Factorial.go 
+Factorial  7 =  5040
+Factorial multithreaded 5040
 

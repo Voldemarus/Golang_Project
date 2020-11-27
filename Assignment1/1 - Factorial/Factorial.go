@@ -3,10 +3,7 @@ package main
 import (
 	"fmt"
 	"sync"
-	"time"
 )
-
-var topWg sync.WaitGroup
 
 func main() {
 
@@ -36,17 +33,26 @@ func factorial(m int) (int, int) {
 
 // Wrapper for multithreaded recursion function
 func factorialMT(m int) int {
-	channel := make(chan int)
+	channel := make(chan int, 1)
+	topWg := new(sync.WaitGroup)
 	topWg.Add(1)
-	go factorial1(1, m, channel)
-	time.Sleep(time.Second * 3)
-
+	go factorial1(topWg, 1, m, channel)
 	topWg.Wait()
-	return <-channel
+	result := <-channel
+	return result
 }
 
-func factorial1(from int, to int, channel chan int) {
+// Debug version = single level goroutine
+func factorial2(parentWG *sync.WaitGroup, from int, to int, channel chan int) {
+	_, v := factorial(to)
+	fmt.Println("fact2 ", v)
+	channel <- v
+	parentWG.Done()
+}
 
+// multithreaded version
+func factorial1(parentWG *sync.WaitGroup, from int, to int, channel chan int) {
+	defer parentWG.Done()
 	if from >= to {
 		channel <- from
 	} else if (to - from) == 1 {
@@ -58,20 +64,17 @@ func factorial1(from int, to int, channel chan int) {
 			middle2++
 		}
 		//	var left, right int
-
-		topWg.Add(1)
-		chanLeft := make(chan int, 1)
-		go factorial1(from, middle, chanLeft)
-		chanRight := make(chan int, 1)
-		topWg.Add(1)
-		go factorial1(middle2, to, chanRight)
-		time.Sleep(time.Millisecond * 600)
-		left := <-chanLeft
-		right := <-chanRight
-		res := left * right
-		channel <- res
-		fmt.Println("from = ", from, " to = ", to, "result = ", res)
+		localWG := new(sync.WaitGroup)
+		localWG.Add(2)
+		leftChan := make(chan int, 1)
+		rightChan := make(chan int, 1)
+		go factorial1(localWG, from, middle, leftChan)
+		go factorial1(localWG, middle2, to, rightChan)
+		localWG.Wait()
+		left := <-leftChan
+		right := <-rightChan
+		result := left * right
+		channel <- result
+		// fmt.Println("from = ", from, " to = ", to, "result = ", result)
 	}
-	topWg.Done()
-
 }
