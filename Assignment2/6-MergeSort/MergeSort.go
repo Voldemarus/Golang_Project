@@ -3,14 +3,23 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
+	"io"
 	"log"
 	"math/rand"
 	"os"
+	"strconv"
+	"sync"
 )
 
 const (
 	GenderMale = iota
 	GenderFemale
+)
+
+const (
+	amountOfSpouses = 5 // total amount of spouses in the array
+	kChunkSize      = 5 // amount of record in one chunk
+	kThreadsAmount  = 6 // amount of patallel threads to process data
 )
 
 type Spouse struct {
@@ -27,17 +36,17 @@ func (s Spouse) id() int {
 	return s.num*2*amountOfSpouses + s.gender
 }
 
-func (s Spouse) print() {
+func (s Spouse) print(full bool) {
 	g := "Female"
 	if s.gender == GenderMale {
 		g = "Male"
 	}
-	fmt.Println("fmaily #", s.num, " Name:", s.name, " Gender:", g)
+	if full {
+		fmt.Println("Family #", s.id(), "Num: ", s.num, " Name:", s.name, " Gender:", g)
+	} else {
+		fmt.Println("#", s.id())
+	}
 }
-
-const (
-	amountOfSpouses = 200 // total amount of spouses in the array
-)
 
 func generateSpouseRandomList() []Spouse {
 	index := 0
@@ -81,7 +90,7 @@ func generateSpouseRandomList() []Spouse {
 }
 
 //
-// Create CSV file with unsorted data
+// Create CSV file from slice
 //
 func createCSVFile(spouseArr []Spouse, fileName string) error {
 	f, err := os.Create(fileName)
@@ -107,6 +116,164 @@ func createCSVFile(spouseArr []Spouse, fileName string) error {
 
 ////////////////////////////////////////////////////////////////
 
+////////////////////////   Ectetrnal Merge Sort ///////////////////////
+
+//
+// name - file name,
+// offset - amount of records from the beginning of the file to be skipped
+// recordCount - amount of records (chunk size) or -1 to
+// read the whole file at once
+//
+func readDatafromCSVFile(csvfile *os.File, recordCount int) ([]Spouse, bool) {
+
+	// Parse the file
+	r := csv.NewReader(csvfile)
+	finished := false
+	var result []Spouse
+	index := 0
+	for {
+		record, err := r.Read()
+		if err == io.EOF || (recordCount > 0 && index == recordCount) {
+			// We should break reading loop if EOF is reached
+			// or predefined amount of records are loaded
+			finished = true
+			break
+		}
+		if index >= 0 {
+			aName := record[0]
+			aGender, _ := strconv.Atoi(record[1])
+			aNum, _ := strconv.Atoi(record[2])
+			newSpouse := Spouse{gender: aGender, num: aNum, name: aName}
+			result = append(result, newSpouse)
+		}
+	}
+	return result, finished
+}
+
+//
+// External merge sort
+//
+func mergeSort(inputFile, outputFile string) error {
+	// Process input file chubk by chunk
+	csvfile, err := os.Open(inputFile)
+	if err != nil {
+		log.Fatalln("Couldn't open the csv file", err)
+	}
+	defer csvfile.Close()
+
+	// Parse the file
+	topWg := new(sync.WaitGroup)
+	finished := false
+	chunks := 0 // total amount of chunks
+	var chunkToSort []Spouse
+	for finished == false {
+		// get chunk
+		chunkToSort, finished = readDatafromCSVFile(csvfile, kChunkSize)
+		if len(chunkToSort) > 0 {
+			topWg.Add(1)
+			go processMergeSorting(chunkToSort, chunks, topWg) // merge sorting for chunk and storing it in the file
+			chunks++                                           // increment counter
+		}
+	}
+	topWg.Wait()
+	fmt.Println("Chunks processed. Total ", chunks, " files created")
+
+	// Now we should merge separate chunk files
+
+	return nil
+}
+
+// perform in memory merge sorting for chunk and store it in the temporary file
+
+func processMergeSorting(chunk []Spouse, chunkNum int, wg *sync.WaitGroup) {
+	size := len(chunk) // can be less then defined in const!
+
+	fmt.Println("Initial chunk")
+	spouseListPrint(chunk, true)
+	fmt.Println("\n\n\n")
+
+	output := mergeSorting(chunk, 0, size-1, nil) // call merge processing on the root node
+
+	fmt.Println("\n\n\n")
+	fmt.Println("Sorted chunk")
+	spouseListPrint(output, true)
+	fmt.Println("\n\n\n")
+
+	// Now we have sorted chunk, store it into temporary file
+	fileName := fmt.Sprintf("tmp/chunk%d.csv", chunkNum)
+	err := createCSVFile(output, fileName)
+	if err != nil {
+		log.Fatalln("Error on chnk file creation -", err)
+	}
+	defer wg.Done()
+}
+
+func mergeSorting(input []Spouse, from int, to int, wg *sync.WaitGroup) []Spouse {
+
+	fmt.Println("mergeSorting called : from", from, " to", to)
+	if from >= to {
+		return input // end of recursion reached, no changes required
+	}
+	//	defer wg.Done()
+
+	pivot := (from + to) / 2
+	localWg := new(sync.WaitGroup)
+	//	localWg.Add(2)
+	mergeSorting(input, from, pivot, localWg)
+	mergeSorting(input, pivot+1, to, localWg)
+	//	localWg.Wait()
+	output := merge(input, from, pivot, to)
+	return output
+}
+
+// Merge two sorted slices
+func merge(data []Spouse, from int, middle int, to int) []Spouse {
+
+	fmt.Println("Merge called : from ", from, " middle ", middle, "to", to)
+
+	tmp := make([]Spouse, len(data))
+	// init borders for intervals to merge
+	leftIndex := from
+	leftStop := middle
+	rightIndex := middle + 1
+	rightStop := to
+
+	index := from // init target position for destination data
+
+	for leftIndex <= leftStop && rightIndex <= rightStop {
+		// scan source arrays
+		if data[leftIndex].id() < data[rightIndex].id() {
+			// data on the left is less then on the right side,
+			// so we put into tmp array element from the left half
+			tmp[index] = data[leftIndex]
+			leftIndex++
+		} else {
+			// cover both == and > cases
+			// value on the right should be placed to output position
+			tmp[index] = data[rightIndex]
+			rightIndex++
+		}
+		index++
+	} // for
+	// As halves can have different sizes (sic!) we should add remaining elements
+	for leftIndex <= leftStop {
+		tmp[index] = data[leftIndex]
+		index++
+		leftIndex++
+	}
+	for rightIndex <= rightStop {
+		tmp[index] = data[rightIndex]
+		index++
+		rightIndex++
+	}
+	spouseListPrint(tmp, true)
+	return tmp
+}
+
+//
+// Main
+//
+
 func main() {
 	// Create initial array of structures, which will be sorted
 	spouseArr := generateSpouseRandomList()
@@ -121,12 +288,11 @@ func main() {
 	fmt.Println("MergeSort = Initial unsorted set written to CSV file")
 }
 
-////////////////////////   Ectetrnal Merge Sort ///////////////////////
+/// Auxillary debug functions ///
 
-//
-// External merge sort
-//
-func mergeSort(inputFile, outputFile string) error {
-
-	return nil
+func spouseListPrint(arr []Spouse, full bool) {
+	for i, v := range arr {
+		fmt.Printf("%2d :: ", i)
+		v.print(full)
+	}
 }

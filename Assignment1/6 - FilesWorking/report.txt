@@ -1,13 +1,13 @@
-Invested sum: 1500.00 USD
+Invested sum: 1546.00 USD
 
 Ticker		Amount of shares	Planned monthly income
-SHLX			145			14.01 USD/month
-ARR			140			11.90 USD/month
-STWD			83			11.29 USD/month
-OKE			41			10.92 USD/month
-AGNC			97			9.89 USD/month
-IRM			54			9.49 USD/month
-SPKE			158			8.17 USD/month
-ET			241			7.59 USD/month
-T			51			7.51 USD/month
-MAC			149			6.33 USD/month
+SHLX			151			14.59 USD/month
+ARR			142			12.07 USD/month
+STWD			82			11.15 USD/month
+OKE			40			10.65 USD/month
+AGNC			100			10.20 USD/month
+IRM			55			9.66 USD/month
+SPKE			169			8.74 USD/month
+T			52			7.66 USD/month
+ET			242			7.62 USD/month
+MAC			147			6.25 USD/month
