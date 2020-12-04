@@ -230,6 +230,10 @@ func mergeSorting(input []Spouse, from int, to int, wg *sync.WaitGroup) []Spouse
 func merge(data []Spouse, from int, middle int, to int) []Spouse {
 
 	fmt.Println("Merge called : from ", from, " middle ", middle, "to", to)
+	fmt.Printf("left ")
+	compactSpousePrint(data, from, middle)
+	fmt.Printf("right ")
+	compactSpousePrint(data, middle+1, to)
 
 	tmp := make([]Spouse, len(data))
 	// init borders for intervals to merge
@@ -242,31 +246,39 @@ func merge(data []Spouse, from int, middle int, to int) []Spouse {
 
 	for leftIndex <= leftStop && rightIndex <= rightStop {
 		// scan source arrays
+		fmt.Printf("index %d ", index)
+		fmt.Println("left id = ", data[leftIndex].id(), "right id = ", data[rightIndex].id())
 		if data[leftIndex].id() < data[rightIndex].id() {
 			// data on the left is less then on the right side,
 			// so we put into tmp array element from the left half
 			tmp[index] = data[leftIndex]
 			leftIndex++
+			fmt.Printf("left - ")
 		} else {
 			// cover both == and > cases
 			// value on the right should be placed to output position
 			tmp[index] = data[rightIndex]
 			rightIndex++
+			fmt.Printf("right - ")
 		}
+		fmt.Println(tmp[index].id())
 		index++
 	} // for
 	// As halves can have different sizes (sic!) we should add remaining elements
 	for leftIndex <= leftStop {
+		fmt.Println(" append from left", leftIndex, " - ", data[leftIndex].id())
 		tmp[index] = data[leftIndex]
 		index++
 		leftIndex++
 	}
 	for rightIndex <= rightStop {
+		fmt.Println(" append from right", data[rightIndex].id())
 		tmp[index] = data[rightIndex]
 		index++
 		rightIndex++
 	}
-	spouseListPrint(tmp, true)
+	//spouseListPrint(tmp, true)
+	compactSpousePrint(tmp, from, to)
 	return tmp
 }
 
@@ -290,9 +302,25 @@ func main() {
 
 /// Auxillary debug functions ///
 
+func compactSpousePrint(arr []Spouse, from int, to int) {
+	if from < 0 {
+		from = 0
+		to = len(arr) - 1
+	}
+	for i := from; i <= to; i++ {
+		fmt.Printf("%2d ", arr[i].id())
+	}
+	fmt.Println()
+}
+
 func spouseListPrint(arr []Spouse, full bool) {
 	for i, v := range arr {
 		fmt.Printf("%2d :: ", i)
-		v.print(full)
+		if len(v.name) > 0 {
+			v.print(full)
+		} else {
+			fmt.Println("-")
+		}
+
 	}
 }
