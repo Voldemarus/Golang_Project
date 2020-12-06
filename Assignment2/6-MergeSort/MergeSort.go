@@ -180,24 +180,31 @@ func mergeSort(inputFile, outputFile string) error {
 
 	// Now we should merge separate chunk files
 
+	fmt.Println("Final merge from sorted chunks")
+	if chunks == 1 {
+		// only one chunk created, so we can just move it into output
+		// filename
+		chunkName := "tmp/chunk0.csv"
+		return os.Rename(chunkName, outputFile)
+	} else {
+		// complex case, we need to process severlchunks and make united
+		// output file
+	}
 	return nil
 }
 
 // perform in memory merge sorting for chunk and store it in the temporary file
 
 func processMergeSorting(chunk []Spouse, chunkNum int, wg *sync.WaitGroup) {
-	size := len(chunk) // can be less then defined in const!
+	//	size := len(chunk) // can be less then defined in const!
 
 	fmt.Println("Initial chunk")
-	spouseListPrint(chunk, true)
-	fmt.Println("\n\n\n")
-
-	output := mergeSorting(chunk, 0, size-1, nil) // call merge processing on the root node
-
-	fmt.Println("\n\n\n")
+	spouseListPrint(chunk, false)
+	fmt.Println()
+	output := mergeSorting(chunk, nil) // call merge processing on the root node
 	fmt.Println("Sorted chunk")
-	spouseListPrint(output, true)
-	fmt.Println("\n\n\n")
+	spouseListPrint(output, false)
+	fmt.Println()
 
 	// Now we have sorted chunk, store it into temporary file
 	fileName := fmt.Sprintf("tmp/chunk%d.csv", chunkNum)
@@ -208,78 +215,66 @@ func processMergeSorting(chunk []Spouse, chunkNum int, wg *sync.WaitGroup) {
 	defer wg.Done()
 }
 
-func mergeSorting(input []Spouse, from int, to int, wg *sync.WaitGroup) []Spouse {
+func mergeSorting(input []Spouse, wg *sync.WaitGroup) []Spouse {
 
-	fmt.Println("mergeSorting called : from", from, " to", to)
-	if from >= to {
+	if len(input) <= 1 {
 		return input // end of recursion reached, no changes required
 	}
 	//	defer wg.Done()
 
-	pivot := (from + to) / 2
+	pivot := len(input) / 2
+
 	localWg := new(sync.WaitGroup)
 	//	localWg.Add(2)
-	mergeSorting(input, from, pivot, localWg)
-	mergeSorting(input, pivot+1, to, localWg)
-	//	localWg.Wait()
-	output := merge(input, from, pivot, to)
+	left := input[:pivot]
+	right := input[pivot:]
+
+	left = mergeSorting(left, localWg)
+	right = mergeSorting(right, localWg)
+
+	output := mergeLR(left, right)
+
 	return output
 }
 
-// Merge two sorted slices
-func merge(data []Spouse, from int, middle int, to int) []Spouse {
+func mergeLR(left []Spouse, right []Spouse) []Spouse {
+	leftStop := len(left) - 1
+	if leftStop < 0 {
+		return right
+	}
+	rightStop := len(right) - 1
+	if rightStop < 0 {
+		return left
+	}
 
-	fmt.Println("Merge called : from ", from, " middle ", middle, "to", to)
-	fmt.Printf("left ")
-	compactSpousePrint(data, from, middle)
-	fmt.Printf("right ")
-	compactSpousePrint(data, middle+1, to)
-
-	tmp := make([]Spouse, len(data))
-	// init borders for intervals to merge
-	leftIndex := from
-	leftStop := middle
-	rightIndex := middle + 1
-	rightStop := to
-
-	index := from // init target position for destination data
-
+	out := make([]Spouse, len(left)+len(right))
+	leftIndex, rightIndex, index := 0, 0, 0
 	for leftIndex <= leftStop && rightIndex <= rightStop {
-		// scan source arrays
-		fmt.Printf("index %d ", index)
-		fmt.Println("left id = ", data[leftIndex].id(), "right id = ", data[rightIndex].id())
-		if data[leftIndex].id() < data[rightIndex].id() {
+		if left[leftIndex].id() < right[rightIndex].id() {
 			// data on the left is less then on the right side,
 			// so we put into tmp array element from the left half
-			tmp[index] = data[leftIndex]
+			out[index] = left[leftIndex]
 			leftIndex++
-			fmt.Printf("left - ")
 		} else {
 			// cover both == and > cases
 			// value on the right should be placed to output position
-			tmp[index] = data[rightIndex]
+			out[index] = right[rightIndex]
 			rightIndex++
-			fmt.Printf("right - ")
 		}
-		fmt.Println(tmp[index].id())
 		index++
 	} // for
-	// As halves can have different sizes (sic!) we should add remaining elements
 	for leftIndex <= leftStop {
-		fmt.Println(" append from left", leftIndex, " - ", data[leftIndex].id())
-		tmp[index] = data[leftIndex]
+		out[index] = left[leftIndex]
 		index++
 		leftIndex++
 	}
 	for rightIndex <= rightStop {
-		fmt.Println(" append from right", data[rightIndex].id())
-		tmp[index] = data[rightIndex]
+		out[index] = right[rightIndex]
 		index++
 		rightIndex++
 	}
-	//spouseListPrint(tmp, true)
-	compactSpousePrint(tmp, from, to)
-	return tmp
+
+	return out
 }
 
 //
@@ -314,13 +309,20 @@ func compactSpousePrint(arr []Spouse, from int, to int) {
 }
 
 func spouseListPrint(arr []Spouse, full bool) {
-	for i, v := range arr {
-		fmt.Printf("%2d :: ", i)
-		if len(v.name) > 0 {
-			v.print(full)
-		} else {
-			fmt.Println("-")
+	if full {
+		for i, v := range arr {
+			fmt.Printf("%2d :: ", i)
+			if len(v.name) > 0 {
+				v.print(full)
+			} else {
+				fmt.Printf("--")
+			}
 		}
-
+	} else {
+		for _, v := range arr {
+			fmt.Printf("%2d ", v.id())
+		}
+		fmt.Println()
 	}
+
 }
