@@ -180,7 +180,6 @@ func mergeSort(inputFile, outputFile string) error {
 
 	// Now we should merge separate chunk files
 
-	fmt.Println("Final merge from sorted chunks")
 	if chunks == 1 {
 		// only one chunk created, so we can just move it into output
 		// filename
@@ -189,14 +188,98 @@ func mergeSort(inputFile, outputFile string) error {
 	} else {
 		// complex case, we need to process severlchunks and make united
 		// output file
+		oFile, err := os.Create(outputFile)
+		defer oFile.Close()
+		if err != nil {
+			log.Fatalln("Cannot create output file ", err)
+		}
+		// Create CSV writer
+		w := csv.NewWriter(oFile)
+		defer w.Flush()
+
+		// now we should scan all chunk files
+		var reader []csv.Reader
+		var currentSpouse []Spouse
+		for chIndex := 0; chIndex < chunks; chIndex++ {
+			fName := fmt.Sprintf("tmp/chunk%d.csv", chIndex)
+			f, err := os.Open(fName)
+			if err != nil {
+				log.Fatalln("Cannot open file ", fName, " error - ", err)
+			}
+			r := csv.NewReader(f)
+			reader = append(reader, *r)
+			csp := readSpouseFromCSV(*r)
+			currentSpouse = append(currentSpouse, csp)
+		}
+
+		// now we should scan all files and on each iteration
+		// select the minimal value from the currentDpouse array
+		for nonEmptySpouseArr(currentSpouse) {
+			index, value := minimalSpouse(currentSpouse)
+			if index >= 0 {
+				workingSpouse := value                                  // this is a minimal value
+				currentSpouse[index] = readSpouseFromCSV(reader[index]) // replace it with next record
+				var record []string
+				record = append(record, workingSpouse.name)
+				record = append(record, fmt.Sprintf("%d", workingSpouse.gender))
+				record = append(record, fmt.Sprintf("%d", workingSpouse.num))
+
+				w.Write(record)
+				if err := w.Error(); err != nil {
+					log.Fatalln("Error during write to final file - ", err)
+
+				} else {
+					break // no more valid records in the array
+				}
+			}
+		}
+		return nil
 	}
-	return nil
+}
+
+func readSpouseFromCSV(reader csv.Reader) Spouse {
+	record, err := reader.Read()
+	if err == io.EOF {
+		// no more data available with this reader
+		return Spouse{0, 0, ""}
+	}
+	aName := record[0]
+	aGender, _ := strconv.Atoi(record[1])
+	aNum, _ := strconv.Atoi(record[2])
+	newSpouse := Spouse{gender: aGender, num: aNum, name: aName}
+	return newSpouse
+}
+
+//
+// If there are at least one non empty record, we can proceed with merging
+//
+func nonEmptySpouseArr(data []Spouse) bool {
+	for _, v := range data {
+		if v.name != "" {
+			return true
+		}
+	}
+	return false
+}
+
+//
+// Get minimal index and appropriate value
+//
+func minimalSpouse(data []Spouse) (int, Spouse) {
+	minId := data[0].id()
+	minIndex := 0
+	for i := 1; i < len(data); i++ {
+		if data[i].id() < minId {
+			minId = data[i].id()
+			minIndex = i
+		}
+	}
+	return minIndex, data[minIndex]
 }
 
 // perform in memory merge sorting for chunk and store it in the temporary file
 
 func processMergeSorting(chunk []Spouse, chunkNum int, wg *sync.WaitGroup) {
-	//	size := len(chunk) // can be less then defined in const!
 
 	fmt.Println("Initial chunk")
 	spouseListPrint(chunk, false)

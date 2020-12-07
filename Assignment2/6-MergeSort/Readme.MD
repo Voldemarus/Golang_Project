@@ -29,3 +29,29 @@ go run MergeSort.go
 
 Example: 
 
+go run MergeSort.go 
+
+Initial chunk
+ 1 40 30 11 21 20 10 31  0 41 
+
+Sorted chunk
+ 0  1 10 11 20 21 30 31 40 41 
+
+ ---- 
+
+ Initial unsorted data are placed into unSortedData.csv
+ Sorted data are placed into sortedCSV.txt (txt! to simplify view on Mac platform)
+
+ ----
+
+Colombina:6-MergeSort 1$ cat sortedCSV.txt 
+Joe,0,0
+Mary,1,0
+Jake,0,1
+Ann,1,1
+Mike,0,2
+Jane,1,2
+Paul,0,3
+Lily,1,3
+Tom,0,4
+Nataly,1,4
