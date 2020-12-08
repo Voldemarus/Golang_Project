@@ -9,8 +9,8 @@ Assignments:-
 
 * 1)Quick sort implementation
 2)AVL tree 
-3)Linked list implementation
-4)Stack implementation program 
+* 3)Linked list implementation
+* 4)Stack implementation program 
 5)Queue implementation program 
 * 6)merge sort with go routine
 7)zig zag matrix 
