@@ -52,7 +52,34 @@ func printMatrix(a SquareMatrix) {
 		}
 		fmt.Println()
 	}
+}
 
+func (a SquareMatrix) cell(i int, j int) int {
+	if i < 0 || j < 0 || i >= a.Size || j >= a.Size {
+		return -1 // error indicator
+	}
+	row := a.Cols[i]
+	return row.Data[j]
+}
+
+// generates matrix with Hilbert distance as a cell value
+func hilbertSpaceMatrix(a SquareMatrix) SquareMatrix {
+	if a.Size > 0 && a.Size < 17 {
+		newMatrix := SquareMatrix{Size: a.Size}
+		matrix := make([]Row, a.Size)
+		for i := 0; i < a.Size; i++ {
+			rowData := make([]int, a.Size)
+			for j := 0; j < a.Size; j++ {
+				d := xy2d(a.Size, i, j)
+				rowData[j] = d
+			}
+			row := Row{rowData}
+			matrix[i] = row
+		}
+		newMatrix.Cols = matrix
+		return newMatrix
+	}
+	return SquareMatrix{Size: 0}
 }
 
 ///// Hilbert curve conversion utilities
@@ -104,6 +131,20 @@ func main() {
 		a := generateSourceMatrix(size)
 		printMatrix(a)
 		fmt.Println()
+		fmt.Println("Matrix in d space")
+		b := hilbertSpaceMatrix(a)
+		printMatrix(b)
+		fmt.Println()
+
+		linearMatrix := make([]int, size*size)
+		for i := 0; i < size; i++ {
+			for j := 0; j < size; j++ {
+				index := b.cell(i, j)
+				linearMatrix[index] = index
+			}
+		}
+		fmt.Println("Zigzagged representation")
+		fmt.Println(linearMatrix)
 
 		fmt.Println()
 	}

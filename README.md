@@ -26,6 +26,6 @@ Assignment 1
 4. Stack implementation program *
 5. Queue implementation program *
 6. Merge sort with go routine *
-7. zig zag matrix - in progress 
+7. zig zag matrix - in progress * - Hilbert curve is used to fill space instead of classic Zig-Zag
 8. Permutation 
 9. Maps and slices in go lang dynamically  

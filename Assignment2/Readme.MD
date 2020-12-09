@@ -13,7 +13,7 @@ Assignments:-
 * 4)Stack implementation program 
 * 5)Queue implementation program 
 * 6)merge sort with go routine
-7)zig zag matrix 
+* 7)zig zag matrix 
 8)permutation 
 9)Maps and slices in go lang dynamically  
 
